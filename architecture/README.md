@@ -1,23 +1,23 @@
-# Confluent Cloud Architecture Diagrams - Draw.io
+# Confluent Cloud Architecture Diagrams - Azure
 
-This directory contains various architecture diagrams for the Confluent Cloud Terraform project.
+This directory contains various architecture diagrams for the Confluent Cloud Terraform project deployed on Azure.
 
 ## 📁 Available Diagrams
 
 ### 1. **ARCHITECTURE_DIAGRAMS.md** - Mermaid Diagrams
 - Comprehensive set of Mermaid flowcharts showing:
-  - Overall architecture overview
-  - Terraform module structure
-  - Multi-environment resource flow
-  - Resource naming conventions
-  - Deployment pipeline flow
-  - Data flow architecture
-  - Environment switching flow
+  - Overall Azure-based architecture overview
+  - Terraform module structure (Root → Azure → Sample Project)
+  - Multi-environment resource flow (Sandbox, Dev, QA, UAT, Prod)
+  - Azure-specific resource naming conventions
+  - Deployment pipeline flow with multiple tfvars files
+  - Data flow architecture with Azure cloud integration
+  - Environment switching flow for Azure environments
 
-### 2. **confluent-architecture.drawio** - Draw.io Diagram (Create this file)
-- Interactive Draw.io diagram
+### 2. **confluent-architecture.drawio** - Draw.io Diagram (Available for Creation)
+- Interactive Draw.io diagram for detailed visual representations
 - Can be edited directly in VS Code with the Draw.io extension
-- Good for detailed visual representations
+- Perfect for complex Azure infrastructure diagrams
 
 ## 🎨 How to Use These Diagrams
 
@@ -50,21 +50,31 @@ flowchart TD
 ## 📋 Diagram Types Available
 
 ### **Current Diagrams Show:**
-- ✅ Overall system architecture
-- ✅ Terraform module relationships
-- ✅ Multi-environment resource distribution
-- ✅ Data flow between components
-- ✅ Deployment pipeline workflow
-- ✅ Resource naming conventions
-- ✅ Environment switching logic
+- ✅ Azure-based system architecture
+- ✅ Terraform module relationships (Root → Azure → Sample Project)
+- ✅ Multi-environment resource distribution (5 environments: sandbox, dev, qa, uat, prod)
+- ✅ Data flow between components with Azure cloud integration
+- ✅ Deployment pipeline workflow with three tfvars configurations
+- ✅ Azure-specific resource naming conventions (azure.myorg prefix)
+- ✅ Environment switching logic for Azure deployments
+- ✅ Flink compute pool integration and status
+
+### **Azure-Specific Features Documented:**
+- Azure East US region deployment
+- Single zone availability configuration
+- Azure-managed Kafka clusters
+- Flink compute pools for stream processing
+- HTTP source connectors with Azure integration
+- Environment-specific cluster management
 
 ### **Suggested Additional Diagrams:**
-- Security architecture (IAM, ACLs, API keys)
-- Network topology
-- Data lineage
-- CI/CD pipeline integration
-- Monitoring and alerting architecture
+- Azure security architecture (Network security, Identity management)
+- Azure cost optimization strategies
+- Azure monitoring and alerting with Confluent Cloud
+- CI/CD pipeline integration with Azure DevOps
+- Disaster recovery and backup strategies on Azure
+- Azure networking topology and private endpoints
 
 ---
 
-*Architecture documentation for Confluent Cloud Terraform Multi-Environment Setup*
+*Architecture documentation for Confluent Cloud Terraform Azure Multi-Environment Setup*

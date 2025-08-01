@@ -204,3 +204,39 @@ For issues and questions:
 2. Refer to Confluent Cloud documentation
 3. Review Azure region compatibility
 4. Verify API key permissions and limits
+
+## Architecture Documentation
+
+Comprehensive architecture diagrams and documentation are available in the `architecture/` directory:
+
+### 📊 **Available Documentation**
+- **[ARCHITECTURE_DIAGRAMS.md](architecture/ARCHITECTURE_DIAGRAMS.md)**: Complete set of Mermaid diagrams showing:
+  - Azure-based architecture overview
+  - Terraform module structure
+  - Multi-environment resource flow
+  - Azure-specific deployment pipeline
+  - Resource naming conventions
+  - Environment switching workflows
+  - Configuration management flows
+
+- **[AZURE_ARCHITECTURE_SUMMARY.md](AZURE_ARCHITECTURE_SUMMARY.md)**: Detailed architecture summary including:
+  - Current platform configuration
+  - Module structure breakdown
+  - Azure-specific settings
+  - Resource dependencies
+  - Deployment guide
+  - Lifecycle management
+  - Known limitations and future enhancements
+
+### 🎨 **Viewing Diagrams**
+- Open `.md` files in VS Code for automatic Mermaid rendering
+- Use the Mermaid extension for interactive diagram viewing
+- Diagrams are automatically rendered in GitHub and most markdown viewers
+
+### 🔄 **Architecture Updates**
+The documentation reflects the current Azure-only configuration with:
+- Complete migration from AWS to Azure
+- Support for 5 environments (Sandbox, Dev, QA, UAT, Production)
+- Flink integration with environment-specific enablement
+- HTTP source connectors with external API integration
+- Lifecycle protection and state management

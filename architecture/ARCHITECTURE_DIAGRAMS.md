@@ -1,32 +1,88 @@
-# Confluent Cloud Terraform Architecture Diagrams
+# Confluent Cloud Terraform Architecture Diagrams - Azure
 
-This document contains comprehensive architecture diagrams for the Confluent Cloud Terraform project showing the modular, multi-environment infrastructure.
+This document contains comprehensive architecture diagrams for the Confluent Cloud Terraform project showing the modular, multi-environment infrastructure deployed on Azure.
+
+## 🌟 Comprehensive Azure Architecture Overview
+
+```mermaid
+flowchart TB
+    subgraph Azure["Microsoft Azure - East US Region"]
+        direction TB
+        
+        subgraph TerraformLayer["Terraform Infrastructure Layer"]
+            direction LR
+            Config[Configuration Files<br/>📄 terraform.tfvars<br/>📄 non-prod.tfvars<br/>📄 prod.tfvars]
+            AzureMod[Azure Module<br/>⚙️ azure_cluster.tf<br/>⚙️ azure_flink.tf<br/>⚙️ azure_sample_project_integration.tf]
+            SampleMod[Sample Project Module<br/>📋 topics.tf<br/>🔗 http_source_connector.tf<br/>🌊 flink_*.tf]
+        end
+        
+        subgraph ConfluentLayer["Confluent Cloud Platform"]
+            direction LR
+            Clusters[Kafka Clusters<br/>🏢 azure-sandbox-cluster<br/>🏢 azure-non-prod-cluster<br/>🏢 azure-prod-cluster]
+            FlinkPool[Flink Compute Pool<br/>🌊 azure-flink-compute-pool<br/>Stream Processing Engine]
+            API[Confluent Cloud API<br/>🔐 Management & Security]
+        end
+        
+        subgraph EnvironmentLayer["Multi-Environment Resources"]
+            direction LR
+            Sandbox[Sandbox Environment<br/>📊 3 Topics<br/>🔗 1 HTTP Connector<br/>✅ Flink Enabled]
+            Dev[Development Environment<br/>📊 3 Topics<br/>🔗 1 HTTP Connector<br/>✅ Flink Enabled]
+            QA[QA Environment<br/>📊 3 Topics<br/>🔗 1 HTTP Connector<br/>✅ Flink Enabled]
+            UAT[UAT Environment<br/>📊 3 Topics<br/>🔗 1 HTTP Connector<br/>✅ Flink Enabled]
+            Prod[Production Environment<br/>📊 3 Topics<br/>🔗 1 HTTP Connector<br/>❌ Flink Disabled]
+        end
+    end
+    
+    Config --> AzureMod
+    AzureMod --> SampleMod
+    SampleMod --> Clusters
+    Clusters --> FlinkPool
+    Clusters --> Sandbox
+    Clusters --> Dev
+    Clusters --> QA
+    Clusters --> UAT
+    Clusters --> Prod
+    API -.-> FlinkPool
+    
+    style Azure fill:#e1f5fe
+    style TerraformLayer fill:#e8f5e8
+    style ConfluentLayer fill:#f3e5f5
+    style EnvironmentLayer fill:#fff3e0
+    style Config fill:#ffecb3
+    style AzureMod fill:#0078d4,color:#fff
+    style Clusters fill:#1976d2,color:#fff
+    style FlinkPool fill:#7b1fa2,color:#fff
+```
 
 ## 🏗️ Overall Architecture Overview
 
 ```mermaid
 flowchart TD
-    A[Terraform Root Module] --> B[AWS Module]
+    A[Terraform Root Module] --> B[Azure Module]
     B --> C[Sample Project Module]
     
-    D[non-prod.tfvars] --> A
-    E[prod.tfvars] --> A
+    D[terraform.tfvars<br/>Sandbox] --> A
+    E[non-prod.tfvars<br/>Dev/QA/UAT] --> A
+    F[prod.tfvars<br/>Production] --> A
     
-    C --> F[Dev Environment]
-    C --> G[QA Environment] 
-    C --> H[UAT Environment]
-    C --> I[Prod Environment]
+    C --> G[Sandbox Environment]
+    C --> H[Dev Environment]
+    C --> I[QA Environment] 
+    C --> J[UAT Environment]
+    C --> K[Prod Environment]
     
-    F --> J[3 Topics<br/>2 Schemas<br/>1 Connector<br/>2 ACLs]
-    G --> K[3 Topics<br/>2 Schemas<br/>1 Connector<br/>2 ACLs]
-    H --> L[3 Topics<br/>2 Schemas<br/>1 Connector<br/>2 ACLs]
-    I --> M[3 Topics<br/>2 Schemas<br/>1 Connector<br/>2 ACLs]
+    G --> L[3 Topics<br/>1 Connector<br/>Flink Enabled]
+    H --> M[3 Topics<br/>1 Connector<br/>Flink Enabled]
+    I --> N[3 Topics<br/>1 Connector<br/>Flink Enabled]
+    J --> O[3 Topics<br/>1 Connector<br/>Flink Enabled]
+    K --> P[3 Topics<br/>1 Connector<br/>Flink Disabled]
     
     style A fill:#e1f5fe
-    style B fill:#f3e5f5
+    style B fill:#0078d4
     style C fill:#e8f5e8
     style D fill:#fff3e0
-    style E fill:#ffebee
+    style E fill:#e3f2fd
+    style F fill:#ffebee
 ```
 
 ## 🗂️ Terraform Module Structure
@@ -37,34 +93,38 @@ flowchart LR
         A[main.tf]
         B[variables.tf]
         C[outputs.tf]
-        D[non-prod.tfvars]
-        E[prod.tfvars]
+        D[terraform.tfvars<br/>Sandbox]
+        E[non-prod.tfvars<br/>Dev/QA/UAT]
+        F[prod.tfvars<br/>Production]
     end
     
     subgraph AZURE["Azure Module"]
-        F[azure_cluster.tf]
-        G[outputs.tf]
-        H[azure_sample_project_integration.tf]
+        G[azure_cluster.tf]
+        H[azure_flink.tf]
+        I[outputs.tf]
+        J[azure_sample_project_integration.tf]
+        K[variables.tf]
     end
     
     subgraph SampleProject["Sample Project Module"]
-        I[main.tf]
-        J[variables.tf]
-        K[outputs.tf]
-        L[versions.tf]
-        M[topics.tf]
-        N[schemas.tf]
-        O[http_source_connector.tf]
-        P[flink_*.tf]
-        Q[schemas/]
+        L[main.tf]
+        M[variables.tf]
+        N[outputs.tf]
+        O[versions.tf]
+        P[topics.tf]
+        Q[http_source_connector.tf]
+        R[flink_*.tf<br/>(commented out)]
+        S[schemas/]
+        T[flink/sql/]
     end
     
-    A --> F
-    H --> I
-    N --> Q
+    A --> G
+    J --> L
+    P --> S
+    R --> T
     
     style Root fill:#e3f2fd
-    style AWS fill:#f1f8e9
+    style AZURE fill:#0078d4
     style SampleProject fill:#fce4ec
 ```
 
@@ -74,47 +134,50 @@ flowchart LR
 flowchart TD
     subgraph Confluent["Confluent Cloud Platform"]
         CC[Environment Management]
-        KC[Kafka Cluster lkc-2grjgy]
-        SR[Schema Registry lsrc-8rwvr7]
-        FP[Flink Compute Pool lfcp-rm50mk]
+        KC[Kafka Cluster<br/>azure-{env}-cluster]
+        FP[Flink Compute Pool<br/>azure-flink-compute-pool]
     end
     
-    subgraph NonProd["Non-Production (when using non-prod.tfvars)"]
-        DT["Dev Topics:<br/>• aws.myorg.dev.sample_project.dummy_topic.0<br/>• aws.myorg.dev.sample_project.dummy_topic_with_schema<br/>• aws.myorg.dev.sample_project.http_source_data.source-connector"]
-        DS["Dev Schemas:<br/>• aws.myorg.dev.sample_project.dummy_topic_with_schema-key<br/>• aws.myorg.dev.sample_project.dummy_topic_with_schema-value"]
-        DC["Dev Connector:<br/>HttpSourceConnector_aws-non-prod-cluster_dev_sample_project"]
+    subgraph Sandbox["Sandbox Environment (terraform.tfvars)"]
+        ST["Sandbox Topics:<br/>• azure.myorg.sandbox.sample_project.dummy_topic.0<br/>• azure.myorg.sandbox.sample_project.dummy_topic_with_schema<br/>• azure.myorg.sandbox.sample_project.http_source_data.source-connector"]
+        SC["Sandbox Connector:<br/>HttpSourceConnector_azure-sandbox-cluster_sandbox_sample_project"]
+    end
+    
+    subgraph NonProd["Non-Production (non-prod.tfvars)"]
+        DT["Dev Topics:<br/>• azure.myorg.dev.sample_project.dummy_topic.0<br/>• azure.myorg.dev.sample_project.dummy_topic_with_schema<br/>• azure.myorg.dev.sample_project.http_source_data.source-connector"]
+        DC["Dev Connector:<br/>HttpSourceConnector_azure-non-prod-cluster_dev_sample_project"]
         
-        QT["QA Topics:<br/>• aws.myorg.qa.sample_project.dummy_topic.0<br/>• aws.myorg.qa.sample_project.dummy_topic_with_schema<br/>• aws.myorg.qa.sample_project.http_source_data.source-connector"]
-        QS["QA Schemas:<br/>• aws.myorg.qa.sample_project.dummy_topic_with_schema-key<br/>• aws.myorg.qa.sample_project.dummy_topic_with_schema-value"]
-        QC["QA Connector:<br/>HttpSourceConnector_aws-non-prod-cluster_qa_sample_project"]
+        QT["QA Topics:<br/>• azure.myorg.qa.sample_project.dummy_topic.0<br/>• azure.myorg.qa.sample_project.dummy_topic_with_schema<br/>• azure.myorg.qa.sample_project.http_source_data.source-connector"]
+        QC["QA Connector:<br/>HttpSourceConnector_azure-non-prod-cluster_qa_sample_project"]
         
-        UT["UAT Topics:<br/>• aws.myorg.uat.sample_project.dummy_topic.0<br/>• aws.myorg.uat.sample_project.dummy_topic_with_schema<br/>• aws.myorg.uat.sample_project.http_source_data.source-connector"]
-        US["UAT Schemas:<br/>• aws.myorg.uat.sample_project.dummy_topic_with_schema-key<br/>• aws.myorg.uat.sample_project.dummy_topic_with_schema-value"]
-        UC["UAT Connector:<br/>HttpSourceConnector_aws-non-prod-cluster_uat_sample_project"]
+        UT["UAT Topics:<br/>• azure.myorg.uat.sample_project.dummy_topic.0<br/>• azure.myorg.uat.sample_project.dummy_topic_with_schema<br/>• azure.myorg.uat.sample_project.http_source_data.source-connector"]
+        UC["UAT Connector:<br/>HttpSourceConnector_azure-non-prod-cluster_uat_sample_project"]
     end
     
-    subgraph Prod["Production (when using prod.tfvars)"]
-        PT["Prod Topics:<br/>• aws.myorg.prod.sample_project.dummy_topic.0<br/>• aws.myorg.prod.sample_project.dummy_topic_with_schema<br/>• aws.myorg.prod.sample_project.http_source_data.source-connector"]
-        PS["Prod Schemas:<br/>• aws.myorg.prod.sample_project.dummy_topic_with_schema-key<br/>• aws.myorg.prod.sample_project.dummy_topic_with_schema-value"]
-        PC["Prod Connector:<br/>HttpSourceConnector_aws-prod-cluster_prod_sample_project"]
+    subgraph Prod["Production (prod.tfvars)"]
+        PT["Prod Topics:<br/>• azure.myorg.prod.sample_project.dummy_topic.0<br/>• azure.myorg.prod.sample_project.dummy_topic_with_schema<br/>• azure.myorg.prod.sample_project.http_source_data.source-connector"]
+        PC["Prod Connector:<br/>HttpSourceConnector_azure-prod-cluster_prod_sample_project"]
     end
     
+    KC --> ST
     KC --> DT
     KC --> QT
     KC --> UT
     KC --> PT
     
-    SR --> DS
-    SR --> QS
-    SR --> US
-    SR --> PS
+    FP --> ST
+    FP --> DT
+    FP --> QT
+    FP --> UT
     
+    SC --> ST
     DC --> DT
     QC --> QT
     UC --> UT
     PC --> PT
     
     style Confluent fill:#e8f5e8
+    style Sandbox fill:#fff3e0
     style NonProd fill:#e3f2fd
     style Prod fill:#ffebee
 ```
@@ -123,14 +186,15 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    A["Base Prefix<br/>aws.myorg"] --> B[Environment]
+    A["Base Prefix<br/>azure.myorg"] --> B[Environment]
     B --> C[Project Name<br/>sample_project]
     C --> D[Resource Name]
     
-    B1[dev] --> C
-    B2[qa] --> C
-    B3[uat] --> C
-    B4[prod] --> C
+    B1[sandbox] --> C
+    B2[dev] --> C
+    B3[qa] --> C
+    B4[uat] --> C
+    B5[prod] --> C
     
     D --> E[dummy_topic.0]
     D --> F[dummy_topic_with_schema]
@@ -138,10 +202,11 @@ flowchart LR
     
     style A fill:#ffecb3
     style C fill:#c8e6c9
-    style B1 fill:#bbdefb
-    style B2 fill:#c5cae9
-    style B3 fill:#d1c4e9
-    style B4 fill:#ffcdd2
+    style B1 fill:#fff3e0
+    style B2 fill:#bbdefb
+    style B3 fill:#c5cae9
+    style B4 fill:#d1c4e9
+    style B5 fill:#ffcdd2
 ```
 
 ## 🚀 Deployment Pipeline Flow
@@ -151,60 +216,69 @@ flowchart TD
     A[terraform init] --> B[terraform validate]
     B --> C{Choose Environment}
     
-    C --> D[terraform plan -var-file="non-prod.tfvars"]
-    C --> E[terraform plan -var-file="prod.tfvars"]
+    C --> D[terraform plan -var-file="terraform.tfvars"<br/>Sandbox Environment]
+    C --> E[terraform plan -var-file="non-prod.tfvars"<br/>Dev/QA/UAT Environments]
+    C --> F[terraform plan -var-file="prod.tfvars"<br/>Production Environment]
     
-    D --> F[terraform apply -var-file="non-prod.tfvars"]
-    E --> G[terraform apply -var-file="prod.tfvars"]
+    D --> G[terraform apply -var-file="terraform.tfvars"]
+    E --> H[terraform apply -var-file="non-prod.tfvars"]
+    F --> I[terraform apply -var-file="prod.tfvars"]
     
-    F --> H[Deploy to Non-Prod:<br/>• Creates dev, qa, uat resources<br/>• 9 topics, 6 schemas, 3 connectors]
-    G --> I[Deploy to Prod:<br/>• Creates prod resources<br/>• 3 topics, 2 schemas, 1 connector]
+    G --> J[Deploy to Sandbox:<br/>• Creates sandbox resources<br/>• 3 topics, 1 connector<br/>• Flink enabled]
+    H --> K[Deploy to Non-Prod:<br/>• Creates dev, qa, uat resources<br/>• 9 topics, 3 connectors<br/>• Flink enabled]
+    I --> L[Deploy to Prod:<br/>• Creates prod resources<br/>• 3 topics, 1 connector<br/>• Flink disabled]
     
     style A fill:#e8f5e8
     style B fill:#e8f5e8
     style C fill:#fff3e0
-    style F fill:#e3f2fd
-    style G fill:#ffebee
+    style G fill:#fff3e0
     style H fill:#e3f2fd
     style I fill:#ffebee
+    style J fill:#fff3e0
+    style K fill:#e3f2fd
+    style L fill:#ffebee
 ```
 
 ## 📊 Resource Distribution by Environment
 
 ```mermaid
 flowchart LR
+    subgraph Sandbox["Sandbox Environment"]
+        S1[3 Kafka Topics]
+        S2[1 HTTP Connector]
+        S3[Flink Enabled]
+    end
+    
     subgraph Dev["Development Environment"]
         D1[3 Kafka Topics]
-        D2[2 Avro Schemas]
-        D3[1 HTTP Connector]
-        D4[2 ACL Rules]
+        D2[1 HTTP Connector]
+        D3[Flink Enabled]
     end
     
     subgraph QA["QA Environment"]
         Q1[3 Kafka Topics]
-        Q2[2 Avro Schemas]
-        Q3[1 HTTP Connector]
-        Q4[2 ACL Rules]
+        Q2[1 HTTP Connector]
+        Q3[Flink Enabled]
     end
     
     subgraph UAT["UAT Environment"]
         U1[3 Kafka Topics]
-        U2[2 Avro Schemas]
-        U3[1 HTTP Connector]
-        U4[2 ACL Rules]
+        U2[1 HTTP Connector]
+        U3[Flink Enabled]
     end
     
     subgraph Prod["Production Environment"]
         P1[3 Kafka Topics]
-        P2[2 Avro Schemas]
-        P3[1 HTTP Connector]
-        P4[2 ACL Rules]
+        P2[1 HTTP Connector]
+        P3[Flink Disabled]
     end
     
+    Sandbox --> Dev
     Dev --> QA
     QA --> UAT
     UAT --> Prod
     
+    style Sandbox fill:#fff3e0
     style Dev fill:#e3f2fd
     style QA fill:#f3e5f5
     style UAT fill:#e8f5e8
@@ -220,72 +294,80 @@ flowchart TD
     end
     
     subgraph Connectors["HTTP Source Connectors"]
-        B1[Dev HTTP Connector]
-        B2[QA HTTP Connector]
-        B3[UAT HTTP Connector]
-        B4[Prod HTTP Connector]
+        B1[Sandbox HTTP Connector]
+        B2[Dev HTTP Connector]
+        B3[QA HTTP Connector]
+        B4[UAT HTTP Connector]
+        B5[Prod HTTP Connector]
     end
     
     subgraph Kafka["Kafka Topics"]
-        C1[HTTP Source Topics<br/>aws.myorg.{env}.sample_project.http_source_data.source-connector]
-        C2[Dummy Topics<br/>aws.myorg.{env}.sample_project.dummy_topic.0]
-        C3[Schema Topics<br/>aws.myorg.{env}.sample_project.dummy_topic_with_schema]
+        C1[HTTP Source Topics<br/>azure.myorg.{env}.sample_project.http_source_data.source-connector]
+        C2[Dummy Topics<br/>azure.myorg.{env}.sample_project.dummy_topic.0]
+        C3[Schema Topics<br/>azure.myorg.{env}.sample_project.dummy_topic_with_schema]
     end
     
     subgraph Processing["Stream Processing"]
-        D1[Flink Compute Pool<br/>lfcp-rm50mk]
-        D2[Stream Processing Jobs]
-        D3[Advanced Analytics]
+        D1[Flink Compute Pool<br/>azure-flink-compute-pool]
+        D2[Stream Processing Jobs<br/>(Available but commented out)]
+        D3[Advanced Analytics<br/>(Available but commented out)]
     end
     
-    subgraph Registry["Schema Registry"]
-        E1[Key Schemas<br/>UserId string type]
-        E2[Value Schemas<br/>UserProfile record with fields:<br/>• id, username, email<br/>• registrationDate<br/>• environment-specific fields]
+    subgraph AzureCloud["Azure Cloud Integration"]
+        E1[Azure East US Region]
+        E2[Single Zone Availability]
+        E3[Azure-managed Infrastructure]
     end
     
     A --> B1
     A --> B2
     A --> B3
     A --> B4
+    A --> B5
     
     B1 --> C1
     B2 --> C1
     B3 --> C1
     B4 --> C1
+    B5 --> C1
     
     C1 --> D1
     C2 --> D2
     C3 --> D3
     
-    C3 --> E1
-    C3 --> E2
+    D1 --> E1
+    E1 --> E2
+    E2 --> E3
     
     style External fill:#ffecb3
     style Connectors fill:#e1f5fe
     style Kafka fill:#e8f5e8
     style Processing fill:#f3e5f5
-    style Registry fill:#fce4ec
+    style AzureCloud fill:#0078d4
 ```
 
 ## 📁 Schema File Organization
 
 ```mermaid
 flowchart TD
-    A[AWS/sample_project/schemas/] --> B[DEV/]
+    A[AZURE/sample_project/schemas/] --> B[DEV/]
     A --> C[QA/]
     A --> D[UAT/]
     A --> E[PROD/]
+    A --> F[SANDBOX/]
     
-    B --> B1[user_id_key.avsc<br/>Basic schema structure]
-    C --> C1[user_id_key.avsc<br/>+ qa_testing_flag: boolean]
-    D --> D1[user_id_key.avsc<br/>+ uat_approval_status: string]
-    E --> E1[user_id_key.avsc<br/>+ profile_status: string]
+    B --> B1[user_id_key.avsc<br/>user_profile_value.avsc<br/>Development schemas]
+    C --> C1[user_id_key.avsc<br/>user_profile_value.avsc<br/>QA testing schemas]
+    D --> D1[user_id_key.avsc<br/>user_profile_value.avsc<br/>UAT approval schemas]
+    E --> E1[user_id_key.avsc<br/>user_profile_value.avsc<br/>Production schemas]
+    F --> F1[user_id_key.avsc<br/>user_profile_value.avsc<br/>Sandbox schemas]
     
     style A fill:#fff3e0
     style B fill:#e3f2fd
     style C fill:#f3e5f5
     style D fill:#e8f5e8
     style E fill:#ffebee
+    style F fill:#fff3e0
 ```
 
 ## 🎯 Environment Switching Flow
@@ -294,58 +376,79 @@ flowchart TD
 flowchart TD
     A[Current State] --> B{Which Environment?}
     
-    B --> C[Switch to Non-Prod]
-    B --> D[Switch to Prod]
+    B --> C[Switch to Sandbox]
+    B --> D[Switch to Non-Prod]
+    B --> E[Switch to Prod]
     
-    C --> E[terraform apply -var-file="non-prod.tfvars"]
-    D --> F[terraform apply -var-file="prod.tfvars"]
+    C --> F[terraform apply -var-file="terraform.tfvars"]
+    D --> G[terraform apply -var-file="non-prod.tfvars"]
+    E --> H[terraform apply -var-file="prod.tfvars"]
     
-    E --> G[Destroys: Prod resources<br/>Creates: Dev, QA, UAT resources]
-    F --> H[Destroys: Dev, QA, UAT resources<br/>Creates: Prod resources]
-    
-    G --> I[Result: 9 topics, 6 schemas, 3 connectors<br/>Environment: non-prod-env<br/>Sub-environments: dev, qa, uat]
-    H --> J[Result: 3 topics, 2 schemas, 1 connector<br/>Environment: prod-env<br/>Sub-environments: prod]
+    F --> I[Deploys: Sandbox resources<br/>Creates: 1 environment with sandbox sub-env<br/>Result: 3 topics, 1 connector, Flink enabled]
+    G --> J[Deploys: Non-Prod resources<br/>Creates: dev, qa, uat sub-environments<br/>Result: 9 topics, 3 connectors, Flink enabled]
+    H --> K[Deploys: Prod resources<br/>Creates: prod sub-environment<br/>Result: 3 topics, 1 connector, Flink disabled]
     
     style A fill:#fff3e0
     style B fill:#fff3e0
-    style C fill:#e3f2fd
-    style D fill:#ffebee
-    style E fill:#e3f2fd
-    style F fill:#ffebee
+    style C fill:#fff3e0
+    style D fill:#e3f2fd
+    style E fill:#ffebee
+    style F fill:#fff3e0
     style G fill:#e3f2fd
     style H fill:#ffebee
-    style I fill:#e3f2fd
-    style J fill:#ffebee
+    style I fill:#fff3e0
+    style J fill:#e3f2fd
+    style K fill:#ffebee
 ```
 
 ## 📈 Deployment Status Summary
 
-### Current Active Resources:
+### Current Active Resources (Azure-Only Configuration):
 
-| Environment | Status | Topics | Schemas | Connectors | ACLs |
-|-------------|---------|--------|---------|------------|------|
-| dev         | ✅ Active | 3 | 2 | 1 | 2 |
-| qa          | ✅ Active | 3 | 2 | 1 | 2 |
-| uat         | ✅ Active | 3 | 2 | 1 | 2 |
-| prod        | ✅ Active | 3 | 2 | 1 | 2 |
-| **Total**   | **✅ Deployed** | **12** | **8** | **4** | **8** |
+| Environment | Status | Topics | Connectors | Flink Status | Cluster Region |
+|-------------|--------|--------|------------|--------------|----------------|
+| sandbox     | ✅ Available | 3 | 1 | Enabled | Azure East US |
+| dev         | ✅ Available | 3 | 1 | Enabled | Azure East US |
+| qa          | ✅ Available | 3 | 1 | Enabled | Azure East US |
+| uat         | ✅ Available | 3 | 1 | Enabled | Azure East US |
+| prod        | ✅ Available | 3 | 1 | Disabled | Azure East US |
 
-### Resource Examples:
+### Environment Configuration Summary:
+
+| Configuration File | Environment Type | Sub-Environments | Total Resources |
+|-------------------|------------------|------------------|-----------------|
+| terraform.tfvars  | sandbox | sandbox | 3 topics, 1 connector |
+| non-prod.tfvars   | non-prod | dev, qa, uat | 9 topics, 3 connectors |
+| prod.tfvars       | prod | prod | 3 topics, 1 connector |
+
+### Resource Examples (Azure Naming Convention):
 
 #### Topic Names:
-- `aws.myorg.dev.sample_project.dummy_topic.0`
-- `aws.myorg.qa.sample_project.dummy_topic_with_schema`
-- `aws.myorg.prod.sample_project.http_source_data.source-connector`
-
-#### Schema Names:
-- `aws.myorg.dev.sample_project.dummy_topic_with_schema-key`
-- `aws.myorg.prod.sample_project.dummy_topic_with_schema-value`
+- `azure.myorg.sandbox.sample_project.dummy_topic.0`
+- `azure.myorg.dev.sample_project.dummy_topic_with_schema`
+- `azure.myorg.prod.sample_project.http_source_data.source-connector`
 
 #### Connector Names:
-- `HttpSourceConnector_aws-non-prod-cluster_dev_sample_project`
-- `HttpSourceConnector_aws-prod-cluster_prod_sample_project`
+- `HttpSourceConnector_azure-sandbox-cluster_sandbox_sample_project`
+- `HttpSourceConnector_azure-non-prod-cluster_dev_sample_project`
+- `HttpSourceConnector_azure-prod-cluster_prod_sample_project`
+
+#### Cluster Names:
+- `azure-sandbox-cluster` (Single Zone, East US)
+- `azure-non-prod-cluster` (Single Zone, East US)
+- `azure-prod-cluster` (Single Zone, East US)
+
+### Key Features:
+- ✅ **Azure-Only Configuration**: Complete migration from AWS to Azure
+- ✅ **Multi-Environment Support**: Sandbox, Dev, QA, UAT, and Production
+- ✅ **Flink Integration**: Stream processing enabled for non-production environments
+- ✅ **HTTP Source Connectors**: Data ingestion from external APIs
+- ✅ **Flexible Deployment**: Environment-specific tfvars files
+- ✅ **Lifecycle Management**: Prevent destroy protection with toggle scripts
+- ⚠️ **Schema Registry**: Disabled due to environment limitations
+- ⚠️ **Flink Statements**: Commented out due to authorization constraints
 
 ---
 
-*Generated for Confluent Cloud Terraform Multi-Environment Architecture*
-*Last Updated: July 30, 2025*
+*Generated for Confluent Cloud Terraform Azure Multi-Environment Architecture*
+*Last Updated: August 1, 2025*
