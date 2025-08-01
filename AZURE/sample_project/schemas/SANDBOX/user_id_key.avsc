@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "name": "UserId",
+  "namespace": "com.example.kafka.avro.key"
+}

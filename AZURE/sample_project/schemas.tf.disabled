@@ -1,0 +1,88 @@
+# Azure Schema Registry Resources
+# This file contains all Schema Registry related resources for Azure environment
+
+# Create Schema Registry Schemas for azure_dummy_topic_with_schema for each sub-environment
+resource "confluent_schema" "azure_dummy_topic_key_schema" {
+  for_each = toset(var.sub_environments)
+
+  schema_registry_cluster {
+    id = var.schema_registry_id
+  }
+  rest_endpoint = var.schema_registry_rest_endpoint
+  subject_name  = "${var.topic_prefix}.${each.key}.${local.project_name}.dummy_topic_with_schema-key"
+  format        = "AVRO"
+  schema        = file("${path.module}/schemas/${upper(each.key)}/user_id_key.avsc")
+
+  credentials {
+    key    = var.schema_registry_api_key
+    secret = var.schema_registry_api_secret
+  }
+
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+resource "confluent_schema" "azure_dummy_topic_value_schema" {
+  for_each = toset(var.sub_environments)
+
+  schema_registry_cluster {
+    id = var.schema_registry_id
+  }
+  rest_endpoint = var.schema_registry_rest_endpoint
+  subject_name  = "${var.topic_prefix}.${each.key}.${local.project_name}.dummy_topic_with_schema.0-value"
+  format        = "AVRO"
+  schema        = file("${path.module}/schemas/${upper(each.key)}/user_profile_value.avsc")
+
+  credentials {
+    key    = var.schema_registry_api_key
+    secret = var.schema_registry_api_secret
+  }
+
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+# Create Schema Registry Schemas for user_profile topic for each sub-environment
+resource "confluent_schema" "azure_user_profile_key_schema" {
+  for_each = toset(var.sub_environments)
+
+  schema_registry_cluster {
+    id = var.schema_registry_id
+  }
+  rest_endpoint = var.schema_registry_rest_endpoint
+  subject_name  = "${var.topic_prefix}.${each.key}.${local.project_name}.user_profile.0-key"
+  format        = "AVRO"
+  schema        = file("${path.module}/schemas/${upper(each.key)}/user_id_key.avsc")
+
+  credentials {
+    key    = var.schema_registry_api_key
+    secret = var.schema_registry_api_secret
+  }
+
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+resource "confluent_schema" "azure_user_profile_value_schema" {
+  for_each = toset(var.sub_environments)
+
+  schema_registry_cluster {
+    id = var.schema_registry_id
+  }
+  rest_endpoint = var.schema_registry_rest_endpoint
+  subject_name  = "${var.topic_prefix}.${each.key}.${local.project_name}.user_profile.0-value"
+  format        = "AVRO"
+  schema        = file("${path.module}/schemas/${upper(each.key)}/user_profile_value.avsc")
+
+  credentials {
+    key    = var.schema_registry_api_key
+    secret = var.schema_registry_api_secret
+  }
+
+  lifecycle {
+    prevent_destroy = false
+  }
+}
